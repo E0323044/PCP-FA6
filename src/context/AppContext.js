@@ -7,6 +7,19 @@ const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
+  useEffect(() => {
+    window.appState = {
+      authUser: state.user,
+      token: state.token,
+      students: state.students,
+      companies: state.companies,
+      drives: state.drives,
+      applications: state.applications,
+      interviews: state.interviews,
+      filters: {},
+      analytics: state.analytics
+    };
+  }, [state]);
 
   // Auto load current user details if token exists
   useEffect(() => {
