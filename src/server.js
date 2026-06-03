@@ -17,8 +17,35 @@ app.use(express.json());
 app.use(morgan('dev'));
 
 // Health check
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'Server is running' });
+app.get('/health', async (req, res) => {
+  try {
+    const mongoose = require('mongoose');
+    const isConnected = mongoose.connection.readyState === 1;
+    let documentCount = 0;
+    try {
+      const Student = require('./models/Student');
+      const Company = require('./models/Company');
+      const Drive = require('./models/Drive');
+      const Application = require('./models/Application');
+      const Interview = require('./models/Interview');
+      if (isConnected) {
+        documentCount = await Student.countDocuments() + 
+                        await Company.countDocuments() + 
+                        await Drive.countDocuments() + 
+                        await Application.countDocuments() + 
+                        await Interview.countDocuments();
+      }
+    } catch (e) {
+      // models not registered yet or connection closed
+    }
+    res.status(200).json({
+      success: true,
+      database: isConnected ? "connected" : "disconnected",
+      documentCount
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 });
 
 // API Routes
