@@ -1,20 +1,45 @@
 // Action Types
 export const SET_LOADING = 'SET_LOADING';
 export const SET_ERROR = 'SET_ERROR';
-export const SET_ITEMS = 'SET_ITEMS';
-export const ADD_ITEM = 'ADD_ITEM';
-export const UPDATE_ITEM = 'UPDATE_ITEM';
-export const DELETE_ITEM = 'DELETE_ITEM';
-export const SET_STATS = 'SET_STATS';
-export const SET_TOKEN = 'SET_TOKEN';
+export const SET_AUTH = 'SET_AUTH';
 export const LOGOUT = 'LOGOUT';
+
+export const SET_STUDENTS = 'SET_STUDENTS';
+export const SET_COMPANIES = 'SET_COMPANIES';
+export const SET_DRIVES = 'SET_DRIVES';
+export const SET_APPLICATIONS = 'SET_APPLICATIONS';
+export const SET_INTERVIEWS = 'SET_INTERVIEWS';
+
+export const ADD_COMPANY = 'ADD_COMPANY';
+export const UPDATE_COMPANY = 'UPDATE_COMPANY';
+export const DELETE_COMPANY = 'DELETE_COMPANY';
+
+export const ADD_DRIVE = 'ADD_DRIVE';
+export const UPDATE_DRIVE = 'UPDATE_DRIVE';
+export const DELETE_DRIVE = 'DELETE_DRIVE';
+
+export const ADD_APPLICATION = 'ADD_APPLICATION';
+export const UPDATE_APPLICATION = 'UPDATE_APPLICATION';
+
+export const ADD_INTERVIEW = 'ADD_INTERVIEW';
+export const UPDATE_INTERVIEW = 'UPDATE_INTERVIEW';
+
+export const SET_ANALYTICS = 'SET_ANALYTICS';
 
 // Initial State
 export const initialState = {
-  items: [],
-  total: 0,
-  stats: null,
+  user: JSON.parse(localStorage.getItem('user')) || null,
   token: localStorage.getItem('token') || null,
+  students: [],
+  companies: [],
+  drives: [],
+  applications: [],
+  interviews: [],
+  analytics: {
+    placements: null,
+    departments: [],
+    companies: []
+  },
   loading: false,
   error: null,
 };
@@ -28,50 +53,104 @@ const appReducer = (state, action) => {
     case SET_ERROR:
       return { ...state, error: action.payload, loading: false };
 
-    case SET_TOKEN:
-      localStorage.setItem('token', action.payload);
-      return { ...state, token: action.payload, error: null };
+    case SET_AUTH:
+      localStorage.setItem('token', action.payload.token);
+      localStorage.setItem('user', JSON.stringify(action.payload.user));
+      return {
+        ...state,
+        token: action.payload.token,
+        user: action.payload.user,
+        error: null,
+        loading: false
+      };
 
     case LOGOUT:
       localStorage.removeItem('token');
-      return { ...state, token: null, items: [], stats: null };
-
-    case SET_ITEMS:
+      localStorage.removeItem('user');
       return {
-        ...state,
-        items: action.payload.data,
-        total: action.payload.total,
-        loading: false,
-        error: null,
+        ...initialState,
+        user: null,
+        token: null
       };
 
-    case ADD_ITEM:
+    case SET_STUDENTS:
+      return { ...state, students: action.payload, loading: false };
+
+    case SET_COMPANIES:
+      return { ...state, companies: action.payload, loading: false };
+
+    case SET_DRIVES:
+      return { ...state, drives: action.payload, loading: false };
+
+    case SET_APPLICATIONS:
+      return { ...state, applications: action.payload, loading: false };
+
+    case SET_INTERVIEWS:
+      return { ...state, interviews: action.payload, loading: false };
+
+    case ADD_COMPANY:
+      return { ...state, companies: [...state.companies, action.payload], loading: false };
+
+    case UPDATE_COMPANY:
       return {
         ...state,
-        items: [action.payload, ...state.items],
-        total: state.total + 1,
-        loading: false,
+        companies: state.companies.map((c) => (c._id === action.payload._id ? action.payload : c)),
+        loading: false
       };
 
-    case UPDATE_ITEM:
+    case DELETE_COMPANY:
       return {
         ...state,
-        items: state.items.map((item) =>
-          item._id === action.payload._id ? action.payload : item
-        ),
-        loading: false,
+        companies: state.companies.filter((c) => c._id !== action.payload),
+        loading: false
       };
 
-    case DELETE_ITEM:
+    case ADD_DRIVE:
+      return { ...state, drives: [...state.drives, action.payload], loading: false };
+
+    case UPDATE_DRIVE:
       return {
         ...state,
-        items: state.items.filter((item) => item._id !== action.payload),
-        total: state.total - 1,
-        loading: false,
+        drives: state.drives.map((d) => (d._id === action.payload._id ? action.payload : d)),
+        loading: false
       };
 
-    case SET_STATS:
-      return { ...state, stats: action.payload, loading: false };
+    case DELETE_DRIVE:
+      return {
+        ...state,
+        drives: state.drives.filter((d) => d._id !== action.payload),
+        loading: false
+      };
+
+    case ADD_APPLICATION:
+      return { ...state, applications: [action.payload, ...state.applications], loading: false };
+
+    case UPDATE_APPLICATION:
+      return {
+        ...state,
+        applications: state.applications.map((a) => (a._id === action.payload._id ? action.payload : a)),
+        loading: false
+      };
+
+    case ADD_INTERVIEW:
+      return { ...state, interviews: [...state.interviews, action.payload], loading: false };
+
+    case UPDATE_INTERVIEW:
+      return {
+        ...state,
+        interviews: state.interviews.map((i) => (i._id === action.payload._id ? action.payload : i)),
+        loading: false
+      };
+
+    case SET_ANALYTICS:
+      return {
+        ...state,
+        analytics: {
+          ...state.analytics,
+          ...action.payload
+        },
+        loading: false
+      };
 
     default:
       return state;
